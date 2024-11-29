@@ -35,8 +35,8 @@ void	*ft_memcpy(void *dst, const void *src, size_t n);
 char *read_from_file(char *basin_buffer, int fd);
 char *append_buffer(char *basin_buffer, char *read_buffer);
 void    print_newline_helper(char *buffer);
-char *get_line(char *basin_buffer);
-char *get_remaining(char *basin_buffer);
+char *extract_line(char *basin_buffer);
+char *obtain_remaining(char *basin_buffer);
 
 
 #endif
