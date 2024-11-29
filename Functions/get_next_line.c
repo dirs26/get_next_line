@@ -86,13 +86,13 @@ char *get_next_line(int fd)
 
     if (!basin_buffer || basin_buffer[0] == '\0')
         return (NULL);
-    line = get_line(basin_buffer);
-    basin_buffer = get_remaining(basin_buffer);
+    line = extract_line(basin_buffer);
+    basin_buffer = obtain_remaining(basin_buffer);
 
     return (line);
 }
 
-char *get_line(char *basin_buffer)
+char *extract_line(char *basin_buffer)
 {
     char *line;
     int i;
@@ -106,7 +106,7 @@ char *get_line(char *basin_buffer)
     return (line);
 }
 
-char *get_remaining(char *basin_buffer)
+char *obtain_remaining(char *basin_buffer)
 {
     char *remaining;
     int i;
