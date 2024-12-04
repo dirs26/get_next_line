@@ -11,65 +11,37 @@
 /* ************************************************************************** */
 
 # include "get_next_line.h"
-
-void    print_newline_helper(char *buffer)
-{
-
-    while (*buffer &&  *buffer != '\0')
-    {
-        if (*buffer == '\n') 
-        {
-            *buffer= '\\';
-        }
-        printf("%c",*buffer);
-        buffer++;
-    }
-}
-
 char *append_buffer(char *basin_buffer, char *read_buffer)
 {
- char *temp;
+    char *temp;
 
- temp = ft_strjoin(basin_buffer, read_buffer);
- free(basin_buffer);
- return (temp);
+    temp = ft_strjoin(basin_buffer, read_buffer);
+    if (!temp)
+        return (NULL);
+    free(basin_buffer);
+    return (temp);
 }
 
 char *read_from_file(char *basin_buffer, int fd)
 {
-    char *cup_buffer;
+    char *cup_buffer = ft_calloc(BUFFER_SIZE + 1, sizeof(char));
     int bytes_read;
 
-    cup_buffer = ft_calloc(BUFFER_SIZE + 1, sizeof(char));
     if (!cup_buffer)
         return (NULL);
-
-    bytes_read = 1;
-    while (bytes_read > 0)
+    while ((bytes_read = read(fd, cup_buffer, BUFFER_SIZE)) > 0)
     {
-        bytes_read = read(fd, cup_buffer, BUFFER_SIZE);
-        if (bytes_read == -1)
-        {
-            free(cup_buffer);
-            return (NULL);
-        }
-
-        if (bytes_read == 0)
-        {
-            free(cup_buffer);
-            return (basin_buffer);
-        }
-
         cup_buffer[bytes_read] = '\0';
         basin_buffer = append_buffer(basin_buffer, cup_buffer);
-
-        if (ft_strchr(basin_buffer, '\n'))
+        if (!basin_buffer || ft_strchr(basin_buffer, '\n'))
             break;
     }
-
     free(cup_buffer);
-    return (basin_buffer);
+    if (bytes_read == -1 || !basin_buffer)
+        free(basin_buffer);
+    return ((bytes_read == -1 || !basin_buffer) ? NULL : basin_buffer);
 }
+
 
 char *get_next_line(int fd)
 {
@@ -81,11 +53,19 @@ char *get_next_line(int fd)
 
     if (!basin_buffer)
         basin_buffer = ft_calloc(1, sizeof(char));
+    if (!basin_buffer)
+        return (NULL);
+
     if (!ft_strchr(basin_buffer, '\n'))
         basin_buffer = read_from_file(basin_buffer, fd);
 
     if (!basin_buffer || basin_buffer[0] == '\0')
+    {
+        free(basin_buffer);
+        basin_buffer = NULL;
         return (NULL);
+    }
+
     line = extract_line(basin_buffer);
     basin_buffer = obtain_remaining(basin_buffer);
 
@@ -117,6 +97,8 @@ char *obtain_remaining(char *basin_buffer)
     if (basin_buffer[i] == '\n')
         i++;
     remaining = strdup(&basin_buffer[i]);
-    free(basin_buffer); 
+    if (!remaining)
+        return (NULL);
+    free(basin_buffer);
     return (remaining);
 }
