@@ -10,95 +10,96 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "get_next_line.h"
-char *append_buffer(char *basin_buffer, char *read_buffer)
-{
-    char *temp;
+#include "get_next_line.h"
 
-    temp = ft_strjoin(basin_buffer, read_buffer);
-    if (!temp)
-        return (NULL);
-    free(basin_buffer);
-    return (temp);
+char	*read_from_file(char *basin_buffer, int fd)
+{
+	char	*buffer;
+	int		size;
+
+	size = 1;
+	buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	if (!buffer)
+		return (NULL);
+	while (!mod_strchr(basin_buffer, '\n') && size > 0)
+	{
+		size = read(fd, buffer, BUFFER_SIZE);
+		if (size == -1)
+		{
+			free(basin_buffer);
+			free(buffer);
+			return (NULL);
+		}
+		buffer[size] = '\0';
+		basin_buffer = mod_strjoin(basin_buffer, buffer);
+	}
+	free(buffer);
+	return (basin_buffer);
 }
 
-char *read_from_file(char *basin_buffer, int fd)
+char	*extract_line(char *basin_buffer)
 {
-    char *cup_buffer = ft_calloc(BUFFER_SIZE + 1, sizeof(char));
-    int bytes_read;
+	char	*s;
+	int		i;
 
-    if (!cup_buffer)
-        return (NULL);
-    while ((bytes_read = read(fd, cup_buffer, BUFFER_SIZE)) > 0)
-    {
-        cup_buffer[bytes_read] = '\0';
-        basin_buffer = append_buffer(basin_buffer, cup_buffer);
-        if (!basin_buffer || ft_strchr(basin_buffer, '\n'))
-            break;
-    }
-    free(cup_buffer);
-    if (bytes_read == -1 || !basin_buffer)
-        free(basin_buffer);
-    return ((bytes_read == -1 || !basin_buffer) ? NULL : basin_buffer);
+	i = 0;
+	if (!basin_buffer[i])
+		return (NULL);
+	while (basin_buffer[i] != '\0' && basin_buffer[i] != '\n')
+		i++;
+	s = malloc(sizeof(char) * (i + 2));
+	i = 0;
+	while (basin_buffer[i] != '\0' && basin_buffer[i] != '\n')
+	{
+		s[i] = basin_buffer[i];
+		i++;
+	}
+	if (basin_buffer[i] == '\n')
+	{
+		s[i] = '\n';
+		i++;
+	}
+	s[i] = '\0';
+	return (s);
 }
 
-
-char *get_next_line(int fd)
+char	*obtain_remaining(char *basin_buffer)
 {
-    static char *basin_buffer;
-    char *line;
+	int		i;
+	int		j;
+	char	*str;
 
-    if (fd < 0 || read(fd, NULL, 0) < 0 || BUFFER_SIZE <= 0)
-        return (NULL);
-
-    if (!basin_buffer)
-        basin_buffer = ft_calloc(1, sizeof(char));
-    if (!basin_buffer)
-        return (NULL);
-
-    if (!ft_strchr(basin_buffer, '\n'))
-        basin_buffer = read_from_file(basin_buffer, fd);
-
-    if (!basin_buffer || basin_buffer[0] == '\0')
-    {
-        free(basin_buffer);
-        basin_buffer = NULL;
-        return (NULL);
-    }
-
-    line = extract_line(basin_buffer);
-    basin_buffer = obtain_remaining(basin_buffer);
-
-    return (line);
+	i = 0;
+	while (basin_buffer[i] != '\0' && basin_buffer[i] != '\n')
+		i++;
+	if (basin_buffer[i] == '\0')
+	{
+		free(basin_buffer);
+		return (NULL);
+	}
+	str = malloc(sizeof(char) * (ft_strlen(basin_buffer) - i + 1));
+	if (!str)
+		return (NULL);
+	i++;
+	j = 0;
+	while (basin_buffer[i] != '\0')
+		str[j++] = basin_buffer[i++];
+	str[j] = '\0';
+	free(basin_buffer);
+	return (str);
 }
 
-char *extract_line(char *basin_buffer)
+char	*get_next_line(int fd)
 {
-    char *line;
-    int i;
+	static char	*basin_buffer;
+	char		*line;
 
-    i = 0;
-    while (basin_buffer[i] && basin_buffer[i] != '\n')
-        i++;
-    if (basin_buffer[i] == '\n')
-        i++;
-    line = strndup(basin_buffer, i);
-    return (line);
-}
-
-char *obtain_remaining(char *basin_buffer)
-{
-    char *remaining;
-    int i;
-
-    i = 0;
-    while (basin_buffer[i] && basin_buffer[i] != '\n')
-        i++;
-    if (basin_buffer[i] == '\n')
-        i++;
-    remaining = strdup(&basin_buffer[i]);
-    if (!remaining)
-        return (NULL);
-    free(basin_buffer);
-    return (remaining);
+	if (BUFFER_SIZE <= 0 || fd < 0)
+		return (NULL);
+	basin_buffer = read_from_file(basin_buffer, fd);
+	if (!basin_buffer)
+		return (NULL);
+	line = extract_line(basin_buffer);
+	basin_buffer = obtain_remaining(basin_buffer);
+	return (line);
 }

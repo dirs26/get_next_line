@@ -14,23 +14,20 @@
 # define GET_NEXT_LINE_H
 
 # ifndef BUFFER_SIZE
-# define BUFFER_SIZE	10
+#  define BUFFER_SIZE 10
 # endif
 
-# include <stdlib.h>
-# include <stdio.h>
-# include <string.h>
 # include <stddef.h>
+# include <stdio.h>
+# include <stdlib.h>
+# include <string.h>
 # include <unistd.h>
 
-char	*ft_strjoin(char const *s1, char const *s2);
+char	*mod_strjoin(char *s1, char *s2);
 size_t	ft_strlen(const char *str);
-char	*ft_strchr(const char *s, int c);
-void	*ft_calloc(size_t nmemb, size_t size);
-void	*ft_memcpy(void *dst, const void *src, size_t n);
+char	*mod_strchr(const char *s, int c);
 char	*get_next_line(int fd);
 char	*read_from_file(char *basin_buffer, int fd);
-char	*append_buffer(char *basin_buffer, char *read_buffer);
 char	*extract_line(char *basin_buffer);
 char	*obtain_remaining(char *basin_buffer);
 
