@@ -26,6 +26,7 @@
 char	*mod_strjoin(char *s1, char *s2);
 size_t	ft_strlen(const char *str);
 char	*mod_strchr(const char *s, int c);
+
 char	*get_next_line(int fd);
 char	*read_from_file(char *basin_buffer, int fd);
 char	*extract_line(char *basin_buffer);
